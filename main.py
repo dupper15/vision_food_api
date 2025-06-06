@@ -53,7 +53,7 @@ def predict_image(url: str = Query(...)):
         predicted_index = int(model.predict(features)[0])
         predicted_label = label_map.get(predicted_index, f"Class {predicted_index}")
         
-       result = {
+        result = {
             "prediction_index": predicted_index,
             "prediction_label": predicted_label
         }
