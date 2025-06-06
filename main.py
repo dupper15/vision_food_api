@@ -10,7 +10,7 @@ import joblib
 app = FastAPI()
 
 # Load model .h5
-model = joblib.load("model.h5")  # đổi tên file nếu cần
+model = joblib.load("logistic.pkl")  # đổi tên file nếu cần
 
 # Mapping label nếu có (ví dụ)
 label_map = {
