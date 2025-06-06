@@ -1,3 +1,5 @@
+import os
+os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 from fastapi import FastAPI, Query
 import numpy as np
 import cv2
@@ -10,15 +12,15 @@ import joblib
 app = FastAPI()
 
 # Load model .h5
-model = joblib.load("logistic.pkl")  # đổi tên file nếu cần
+model = joblib.load("model.pkl")  # đổi tên file nếu cần
 
 # Mapping label nếu có (ví dụ)
 label_map = {
-    0: "Bún bò Huế",
-    1: "Phở",
+    0: "Bánh mì",
+    1: "Bánh cuốn",
     2: "Cơm tấm",
-    3: "Bánh mì",
-    4: "Xôi xéo",
+    3: "Phở",
+    4: "Xôi xéo"
 }
 
 # Hàm tải ảnh từ URL
