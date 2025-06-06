@@ -11,13 +11,12 @@ import joblib
 
 app = FastAPI()
 
-# Load mô hình scikit-learn
 model = joblib.load("model.pkl")
 
-# Load ResNet50 không có top và không pooling để lấy output shape (1, 7, 7, 2048)
 resnet_model = ResNet50(weights="imagenet", include_top=False, pooling=None)
 
-# Mapping label
+categories = ['Banh mi', 'Banh cuon', 'Com tam', 'Pho', 'Xoi xeo']
+
 label_map = {
     0: "Bánh mì",
     1: "Bánh cuốn",
@@ -30,6 +29,8 @@ def url_to_image(url):
     resp = urllib.request.urlopen(url)
     image = np.asarray(bytearray(resp.read()), dtype="uint8")
     image = cv2.imdecode(image, cv2.IMREAD_COLOR)
+    if image is None:
+        raise ValueError("Không thể đọc ảnh từ URL.")
     return image
 
 def extract_features(image):
@@ -38,8 +39,8 @@ def extract_features(image):
     img_array = np.expand_dims(img_array, axis=0)
     img_array = preprocess_input(img_array)
 
-    features = resnet_model.predict(img_array, verbose=0)  # shape (1, 7, 7, 2048)
-    features = features.reshape((features.shape[0], -1))  # flatten to (1, 100352)
+    features = resnet_model.predict(img_array, verbose=0)
+    features = features.reshape((features.shape[0], -1))
     return features
 
 @app.get("/predict")
@@ -49,16 +50,19 @@ def predict_image(url: str = Query(...)):
         image = url_to_image(url)
         features = extract_features(image)
 
-        predicted_label = model.predict(features)[0]
-        predicted_index = next((k for k, v in label_map.items() if v == predicted_label), -1)
+        predicted_label_en = model.predict(features)[0]  
+        print(f"🔎 Predicted English label: {predicted_label_en}")
+
+        predicted_index = categories.index(predicted_label_en)
+        predicted_label_vi = label_map.get(predicted_index, f"Class {predicted_index}")
 
         result = {
-            "prediction_index": predicted_index,
-            "prediction_label": predicted_label
+            "prediction_label": predicted_label_vi
         }
 
-        print(f"✅ Prediction result: {result}") 
+        print(f"✅ Prediction result: {result}")
         return result
+
     except Exception as e:
         print(f"❌ Error: {e}")
         return {"error": str(e)}
