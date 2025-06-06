@@ -49,8 +49,8 @@ def predict_image(url: str = Query(...)):
         image = url_to_image(url)
         features = extract_features(image)
 
-        predicted_index = int(model.predict(features)[0])
-        predicted_label = label_map.get(predicted_index, f"Class {predicted_index}")
+        predicted_label = model.predict(features)[0]
+        predicted_index = next((k for k, v in label_map.items() if v == predicted_label), -1)
 
         result = {
             "prediction_index": predicted_index,
