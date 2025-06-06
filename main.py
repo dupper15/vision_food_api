@@ -5,11 +5,12 @@ from tensorflow.keras.applications.resnet50 import preprocess_input
 from tensorflow.keras.preprocessing.image import img_to_array
 from tensorflow.keras.models import load_model
 import urllib.request
+import joblib
 
 app = FastAPI()
 
 # Load model .h5
-model = load_model("model.h5")  # đổi tên file nếu cần
+clf = joblib.load("model.h5")  # đổi tên file nếu cần
 
 # Mapping label nếu có (ví dụ)
 label_map = {
