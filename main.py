@@ -14,8 +14,8 @@ app = FastAPI()
 # Load mô hình scikit-learn
 model = joblib.load("model.pkl")
 
-# Load ResNet50 để trích đặc trưng
-resnet_model = ResNet50(weights="imagenet", include_top=False, pooling='avg')
+# Load ResNet50 không có top và không pooling để lấy output shape (1, 7, 7, 2048)
+resnet_model = ResNet50(weights="imagenet", include_top=False, pooling=None)
 
 # Mapping label
 label_map = {
@@ -26,22 +26,21 @@ label_map = {
     4: "Xôi xéo"
 }
 
-# Hàm tải ảnh từ URL
 def url_to_image(url):
     resp = urllib.request.urlopen(url)
     image = np.asarray(bytearray(resp.read()), dtype="uint8")
     image = cv2.imdecode(image, cv2.IMREAD_COLOR)
     return image
 
-# Hàm trích đặc trưng ảnh
 def extract_features(image):
     image = cv2.resize(image, (224, 224))
     img_array = img_to_array(image)
     img_array = np.expand_dims(img_array, axis=0)
     img_array = preprocess_input(img_array)
 
-    features = resnet_model.predict(img_array, verbose=0)
-    return features  # shape (1, 2048)
+    features = resnet_model.predict(img_array, verbose=0)  # shape (1, 7, 7, 2048)
+    features = features.reshape((features.shape[0], -1))  # flatten to (1, 100352)
+    return features
 
 @app.get("/predict")
 def predict_image(url: str = Query(...)):
@@ -52,7 +51,7 @@ def predict_image(url: str = Query(...)):
 
         predicted_index = int(model.predict(features)[0])
         predicted_label = label_map.get(predicted_index, f"Class {predicted_index}")
-        
+
         result = {
             "prediction_index": predicted_index,
             "prediction_label": predicted_label
