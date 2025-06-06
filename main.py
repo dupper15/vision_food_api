@@ -33,6 +33,7 @@ def url_to_image(url):
 @app.get("/predict")
 def predict_image(url: str = Query(...)):
     try:
+        print(f"🔍 API called with URL: {url}")
         image = url_to_image(url)
         image = cv2.resize(image, (224, 224))  
         img_array = img_to_array(image)
